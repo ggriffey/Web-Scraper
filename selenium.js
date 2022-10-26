@@ -1,36 +1,37 @@
 const { Keys, By, Builder } = require("selenium-webdriver");
 const chrome = require("selenium-webdriver/chrome");
-const user_test = "test_username";
-const pass_test = "test_password";
+const { username, password } = require("./credentials.json");
 
+const user_test = username;
+const pass_test = password;
 const service = new chrome.ServiceBuilder("/Users/ggriffey/chromedriver");
 
-// start the session:
-const driver = new Builder()
-  .forBrowser("chrome")
-  .setChromeService(service)
-  .build();
+const main = async () => {
+  // start the session:
+  const driver = await new Builder()
+    .forBrowser("chrome")
+    .setChromeService(service)
+    .build();
 
-const util = require("util");
-// console.log(util.inspect(driver));
+  // navigate to URL:
+  await driver.get("https://www.facebook.com/");
 
-// navigate to URL:
-driver.get("https://www.facebook.com/");
+  // request information from site:
+  // ex.
+  const title = await driver.getTitle();
 
-// request information from site:
-// ex.
-driver.getTitle();
+  await driver.manage().setTimeouts({ implicit: 500 });
 
-/* set waiting strategy (as to not access information 
-    that is not yet available) */
-// driver.manage().setTimeouts({ implicit: 5000 });
+  // select element(s)
+  let username = await driver.findElement(By.id("email"));
+  let password = await driver.findElement(By.id("pass"));
 
-// select element(s)
-let username = driver.findElement(By.id("email"));
-let password = driver.findElement(By.id("pass"));
+  await username.sendKeys(user_test);
+  await password.sendKeys(pass_test);
 
-driver.wait(username.sendKeys(user_test), 10000);
-driver.wait(password.sendKeys(pass_test), 10000);
+  let submit = await driver.findElement(By.linkText("Log In"));
 
-// let submit = driver.findElement(By.id("u_0_5_bb"));
-// driver.wait(submit.click(), 5000);
+  await submit.click();
+};
+
+main();
